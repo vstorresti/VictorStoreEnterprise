@@ -31,7 +31,7 @@ namespace Victor.Identidade.API.Controllers
         [HttpPost("registrar")]
         public async Task<IActionResult> Registrar(UsuarioRegistro usuarioRegistro)
         {
-            if (!ModelState.IsValid) return BadRequest();
+            if (!ModelState.IsValid) return CustomResponse(ModelState);
 
             var usuario = new IdentityUser
             {
@@ -44,26 +44,37 @@ namespace Victor.Identidade.API.Controllers
 
             if (resultado.Succeeded)
             {
-                await _signInManager.SignInAsync(usuario, false);
-                return Ok(await GerarJwt(usuarioRegistro.Email));
+                return CustomResponse(await GerarJwt(usuarioRegistro.Email));
             }
 
-            return BadRequest();
+            foreach (var error in resultado.Errors)
+            {
+                AdicionarErroProcessamento(error.Description);
+            }
+
+            return CustomResponse();
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(UsuarioLogin usuarioLogin)
         {
-            if (!ModelState.IsValid) return BadRequest();
+            if (!ModelState.IsValid) return CustomResponse(ModelState);
 
             var resultado = await _signInManager.PasswordSignInAsync(usuarioLogin.Email, usuarioLogin.Senha, false, true);
 
             if (resultado.Succeeded)
             {
-                return Ok(await GerarJwt(usuarioLogin.Email));
+                return CustomResponse(await GerarJwt(usuarioLogin.Email));
             }
 
-            return BadRequest();
+            if (resultado.IsLockedOut)
+            {
+                AdicionarErroProcessamento("Usuário temporariamente bloqueado por tentativas inválidas");
+                return CustomResponse();
+            }
+
+            AdicionarErroProcessamento("Usuário ou Senha incorretos");
+            return CustomResponse();
         }
 
         private async Task<UsuarioRespostaLogin> GerarJwt(string email)
@@ -138,7 +149,5 @@ namespace Victor.Identidade.API.Controllers
 
         private static long ToUnixEpochDate(DateTime date)
             => (long)Math.Round((date.ToUniversalTime() - new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero)).TotalSeconds);
-
-
     }
 }
