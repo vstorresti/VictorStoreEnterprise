@@ -1,11 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Victor.WebApp.MVC.Models;
+using Victor.WebApp.MVC.Services.Interfaces;
 
 namespace Victor.WebApp.MVC.Controllers
 {
     public class IdentidadeController : Controller
     {
+        private readonly IAutenticacaoService _autenticacaoService;
+
+        public IdentidadeController(IAutenticacaoService autenticacaoService)
+        {
+            _autenticacaoService = autenticacaoService;
+        }
+
         [HttpGet]
         [Route("nova-conta")]
         public IActionResult Registro()
@@ -20,6 +28,7 @@ namespace Victor.WebApp.MVC.Controllers
             if (!ModelState.IsValid) return View(usuarioRegistro);
 
             // API - Registro
+            var resposta = await _autenticacaoService.Registro(usuarioRegistro);
 
             if (false) return View(usuarioRegistro);
 
@@ -42,6 +51,7 @@ namespace Victor.WebApp.MVC.Controllers
             if (!ModelState.IsValid) return View(usuarioLogin);
 
             // API - Login
+            var resposta = await _autenticacaoService.Login(usuarioLogin);
 
             if (false) return View(usuarioLogin);
 

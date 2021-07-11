@@ -14,6 +14,7 @@ using Victor.Identidade.API.Models;
 
 namespace Victor.Identidade.API.Controllers
 {
+    [Route("api/identidade")]
     public class AuthController : BaseController
     {
         private readonly SignInManager<IdentityUser> _signInManager;
