@@ -16,7 +16,7 @@ namespace Victor.WebApp.MVC.Services
             _httpClient = httpClient;
         }
 
-        public async Task<string> Login(UsuarioLogin usuarioLogin)
+        public async Task<UsuarioRespostaLogin> Login(UsuarioLogin usuarioLogin)
         {
             var loginContent = new StringContent(
                 JsonSerializer.Serialize(usuarioLogin),
@@ -27,12 +27,15 @@ namespace Victor.WebApp.MVC.Services
 
             var response = await _httpClient.PostAsync(url, loginContent);
 
-            var teste = await response.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+            };
 
-            return JsonSerializer.Deserialize<string>(await response.Content.ReadAsStringAsync());
+            return JsonSerializer.Deserialize<UsuarioRespostaLogin>(await response.Content.ReadAsStringAsync(), options);
         }
 
-        public async Task<string> Registro(UsuarioRegistro usuarioRegistro)
+        public async Task<UsuarioRespostaLogin> Registro(UsuarioRegistro usuarioRegistro)
         {
             var registroContent = new StringContent(
                 JsonSerializer.Serialize(usuarioRegistro),
@@ -40,10 +43,15 @@ namespace Victor.WebApp.MVC.Services
                 "application/json");
 
             var url = "https://localhost:44361/api/identidade/registrar";
-
+             
             var response = await _httpClient.PostAsync(url, registroContent);
 
-            return JsonSerializer.Deserialize<string>(await response.Content.ReadAsStringAsync());
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+            };
+
+            return JsonSerializer.Deserialize<UsuarioRespostaLogin>(await response.Content.ReadAsStringAsync(), options);
         }
     }
 }
